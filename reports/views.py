@@ -58,6 +58,7 @@ def creer_pdf_complet(stats_conso, config):
 
 class GlobalDashboardStatsView(APIView):
     permission_classes = [IsAuthenticated, IsSyndicPermission]
+
     def get(self, request):
         return Response({
             "infrastructure": {
@@ -69,9 +70,11 @@ class GlobalDashboardStatsView(APIView):
                 "staff_technique": TechnicienMaintenance.objects.count(),
             },
             "maintenance": {
-                "alertes_ouvertes": Reclamation.objects.filter(statut='OUVERTE').count() + Alerte.objects.filter(est_traitee=False).count(),
+                # Correction du nom de clé pour le frontend
+                "reclamations_ouvertes": Reclamation.objects.filter(statut='OUVERTE').count(),
+                "alertes_critiques": Alerte.objects.filter(seuil__type_alerte='SURCONS', est_traitee=False).count(),
                 "interventions_en_cours": Intervention.objects.filter(reclamation__statut='EN_COURS').count(),
-                "taux_resolution": self.get_resolution_rate(), # Optionnel : % de succès
+                "taux_resolution": self.get_resolution_rate(),
             }
         })
 

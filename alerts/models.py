@@ -21,18 +21,14 @@ class SeuilAlerte(models.Model):
     def __str__(self):
         return f"Seuil {self.type_alerte} - {self.valeur_seuil}"
 
+# src/alerts/models.py
 class Alerte(models.Model):
-    """
-    Modèle Alerte. Enregistrement des détections[cite: 16].
-    """
     id = models.AutoField(primary_key=True)
-    seuil = models.ForeignKey(SeuilAlerte, on_delete=models.SET_NULL, null=True)
+    seuil = models.ForeignKey('alerts.SeuilAlerte', on_delete=models.SET_NULL, null=True)
     description = models.TextField()
     date_detection = models.DateTimeField(auto_now_add=True)
     est_traitee = models.BooleanField(default=False)
-    
-    # Relation : L'alerte concerne un Compteur
-    compteur = models.ForeignKey(Compteur, on_delete=models.CASCADE, related_name='alertes')
+    compteur = models.ForeignKey('consumption.Compteur', on_delete=models.CASCADE, related_name='alertes')
 
     def __str__(self):
         return f"Alerte sur {self.compteur.reference} ({'Traitée' if self.est_traitee else 'Ouverte'})"

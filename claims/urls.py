@@ -13,7 +13,7 @@ router = DefaultRouter()
 # 1. Pour les Résidents
 router.register('reclamations', ReclamationSoumissionViewSet, basename='reclamation-resident')
 
-# 2. Pour le Syndic (Traitement des réclamations)
+# 2. Pour le Syndic , technicien (Traitement des réclamations)
 router.register('traitement/reclamations', ReclamationTraitementViewSet, basename='reclamation-traitement')
 
 # 3. NOUVEAU : Pour le Syndic (CRUD des Interventions / Assignation)

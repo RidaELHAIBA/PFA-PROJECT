@@ -4,43 +4,45 @@ from rest_framework import serializers
 from .models import Releve, Compteur , PartieCommune
 
 class ReleveSaisieSerializer(serializers.ModelSerializer):
-    """
-    Sérialiseur pour la saisie manuelle d'un Relevé par le Syndic.
-    """
-    # Ce champ n'est pas dans le modèle, mais il est dans le JSON d'entrée.
-    compteur_reference = serializers.CharField(write_only=True) 
+    # Ce champ sert à la LECTURE (GET)
+    compteur_reference = serializers.CharField(source='compteur.reference', read_only=True)
+    
+    # Ce champ sert à l'ÉCRITURE (POST) - On l'appelle comme le Frontend l'envoie
+    # On met required=False pour ne pas bloquer le PATCH/PUT
+    ref_saisie_input = serializers.CharField(write_only=True, required=False, source='compteur_reference') 
 
     class Meta:
         model = Releve
-        # Les champs que l'API accepte en entrée
-        fields = (
-            'id', 
-            'compteur_reference', 
-            'valeur', 
-            'date_releve', 
-            'commentaire'
-        )
-        # Ces champs sont définis par le code, pas par l'utilisateur
-        read_only_fields = ('est_corrige', 'methode_releve') 
+        fields = ('id', 'compteur_reference', 'ref_saisie_input', 'valeur', 'date_releve', 'commentaire')
+        read_only_fields = ('est_corrige', 'methode_releve')
 
     def create(self, validated_data):
-        """
-        Gère la liaison du Compteur et l'enregistrement du Relevé.
-        """
-        compteur_reference = validated_data.pop('compteur_reference')
+        # On cherche la référence sous le nom envoyé par le Front
+        # Note : Ton frontend envoie 'compteur_reference' dans le body du POST
+        ref = self.initial_data.get('compteur_reference')
         
-        # 1. Chercher le Compteur par sa référence
-        try:
-            compteur = Compteur.objects.get(reference=compteur_reference)
-        except Compteur.DoesNotExist:
-            raise serializers.ValidationError({"compteur_reference": "Compteur non trouvé avec cette référence."})
+        if not ref:
+            raise serializers.ValidationError({"compteur_reference": "Ce champ est obligatoire."})
 
-        # 2. Remplir les champs automatiques
-        validated_data['compteur'] = compteur
-        validated_data['methode_releve'] = 'Manuelle' 
+        try:
+            compteur = Compteur.objects.get(reference=ref)
+        except Compteur.DoesNotExist:
+            raise serializers.ValidationError({"compteur_reference": "Compteur introuvable."})
         
-        # 3. Créer le Relevé
+        validated_data['compteur'] = compteur
+        validated_data['methode_releve'] = 'Manuelle'
+        
+        # On retire la clé temporaire si elle existe pour éviter les erreurs SQL
+        validated_data.pop('compteur_reference', None)
+        
         return Releve.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.valeur = validated_data.get('valeur', instance.valeur)
+        instance.commentaire = validated_data.get('commentaire', instance.commentaire)
+        instance.est_corrige = True
+        instance.save()
+        return instance
     
 class PartieCommuneSerializer(serializers.ModelSerializer):
     class Meta:

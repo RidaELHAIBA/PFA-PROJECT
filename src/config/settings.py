@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'alerts.apps.AlertsConfig',
     'reports.apps.ReportsConfig',
     'rest_framework.authtoken',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -57,6 +58,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -138,3 +140,4 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication', # Vous devrez installer djangorestframework-simplejwt plus tard
     )
 }
+CORS_ALLOW_ALL_ORIGINS = True

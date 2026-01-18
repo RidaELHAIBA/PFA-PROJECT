@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework.authtoken.views import obtain_auth_token
-from .views import ResidentManagementViewSet, TechnicienManagementViewSet
+from .views import ResidentManagementViewSet, TechnicienManagementViewSet  , UserProfileViewSet
 
 # 1. On initialise le router
 router = DefaultRouter()
@@ -12,6 +12,7 @@ router.register(r'gestion-residents', ResidentManagementViewSet, basename='admin
 
 # Cela crée automatiquement: /gestion-techniciens/ et /gestion-techniciens/{id}/
 router.register(r'gestion-techniciens', TechnicienManagementViewSet, basename='admin-techs')
+router.register(r'profile', UserProfileViewSet, basename='user-profile')
 
 urlpatterns = [
     # Garde ton endpoint d'authentification actuel

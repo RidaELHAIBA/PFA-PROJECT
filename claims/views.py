@@ -64,6 +64,13 @@ class IsSyndicPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         # Vérifie si l'utilisateur est authentifié et possède le profil Syndic
         return (request.user.is_authenticated and hasattr(request.user, 'syndic')) or request.user.is_superuser
+class IsTechnicienPermission(permissions.BasePermission):
+    """
+    Permission personnalisée : Autorise l'accès uniquement aux Techniciens de Maintenance.
+    """
+    def has_permission(self, request, view):
+        # Vérifie si l'utilisateur est authentifié et possède le profil TechnicienMaintenance
+        return (request.user.is_authenticated and hasattr(request.user, 'technicien maintenance')) or request.user.is_superuser
 
 class ReclamationTraitementViewSet(mixins.RetrieveModelMixin,
                                     mixins.ListModelMixin,
@@ -73,7 +80,7 @@ class ReclamationTraitementViewSet(mixins.RetrieveModelMixin,
     Permet au Syndic de Consulter, Traiter (mettre à jour statut) et Clôturer les réclamations.
     """
     serializer_class = ReclamationTraitementSerializer
-    permission_classes = [IsAuthenticated, IsSyndicPermission] # Seul le Syndic
+    permission_classes = [IsAuthenticated, IsSyndicPermission ] # Seul le Syndic
 
     # Le Syndic voit toutes les réclamations
     queryset = Reclamation.objects.all().order_by('-date_soumission') 

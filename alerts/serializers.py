@@ -21,14 +21,21 @@ class AlerteSerializer(serializers.ModelSerializer):
             'est_traitee'
         )
 class SeuilAlerteSerializer(serializers.ModelSerializer):
-    compteur_reference = serializers.CharField(write_only=True) # Le Syndic tape "REF001"
+    # On utilise 'source' pour mapper le champ vers l'attribut du modèle lié
+    compteur_reference = serializers.CharField(source='compteur.reference', required=True)
 
     class Meta:
         model = SeuilAlerte
         fields = ['id', 'type_alerte', 'valeur_seuil', 'compteur_reference']
 
     def create(self, validated_data):
-        ref = validated_data.pop('compteur_reference')
-        # On va chercher le compteur en interne via la référence
-        compteur = Compteur.objects.get(reference=ref)
+        # On récupère la structure imbriquée créée par 'source'
+        compteur_data = validated_data.pop('compteur')
+        ref = compteur_data['reference']
+        
+        try:
+            compteur = Compteur.objects.get(reference=ref)
+        except Compteur.DoesNotExist:
+            raise serializers.ValidationError({"compteur_reference": "Ce compteur n'existe pas."})
+            
         return SeuilAlerte.objects.create(compteur=compteur, **validated_data)
